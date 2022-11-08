@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-16" standalone="yes"?>
+<rules name="TransportVersioned">
+	<rule name="X-PMF-Tag: Purge Tags" id="ded8f44a-02a5-4d2e-a933-fb7bb9669c4a" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Purge Tags' -Comments 'Removing X-PMF-Tag for incoming emails before processing.' -Mode Enforce -SentToScope InOrganization -HeaderMatchesMessageHeader 'X-PMF-Tag' -HeaderMatchesPatterns '[\S\s]+' -RemoveHeader 'X-PMF-Tag']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: Purge Tags" id="da7eda9f-9a65-43c7-a487-d1280b8fbff1" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Purge Tags' -Comments 'Removing X-PMF-Shield from incoming emails before processing.' -Mode Enforce -SentToScope InOrganization -HeaderMatchesMessageHeader 'X-PMF-Shield' -HeaderMatchesPatterns '[\S\s]+' -RemoveHeader 'X-PMF-Shield']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Exceptions" id="8bb20ef2-8902-4b37-832d-0fe845ae4227" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Exceptions' -Mode Enforce -SentTo 'someone@yourdomain.com' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Exceptions']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="Delete Mail if the Sender's Address is" id="6b0310d0-a748-42fc-a2e6-d8923dfca0d2" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'Delete Mail if the Sender''s Address is' -Mode Enforce -From 'badguy@outside.com' -DeleteMessage $true]]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="Delete Mail if the Domain is" id="8b72732b-8713-4bb6-8ae0-356f6c83c3c3" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'Delete Mail if the Domain is ' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SenderDomainIs 'baddomain.com' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions' -DeleteMessage $true]]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="Delete Mail if the Sender's IP is" id="9ff1b967-5e0b-498c-91b4-faaf1a965a60" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'Delete Mail if the Sender''s IP is' -Mode Enforce -SenderIpRanges <IP or IP range> -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions' -DeleteMessage $true]]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Free email providers" id="2b4620d7-a49c-41f5-93a6-13b0c8b6c45f" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Free email providers' -Comments 'Tag free email domains to exclude from Commercial tags. Add more when needed.' -Mode Enforce -SenderAddressLocation Envelope -SentToScope InOrganization -SenderDomainIs 'protonmail.com', 'gmail.com', 'outlook.com', 'hotmail.co.uk', 'hotmail.com', 'live.com', 'aol.com', 'yahoo.co.uk', 'yahoo.com', 'ymail.com', 'inbox.com', 'icloud.com', 'mail.com', 'comcast.net' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions' -ExceptIfSenderDomainIs 'alerts.comcast.net' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Free-Mail']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="Delete Mail if sender is Free email and message is T-Shirt Spam" id="49486238-5e07-48db-a2b6-c9c63033cda1" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'Delete Mail if sender is Free email and message is T-Shirt Spam' -Mode Enforce -SubjectOrBodyContainsWords 'Unsubsribe', 'unsubscribe' -HeaderMatchesMessageHeader 'X-PMF-Tag' -HeaderMatchesPatterns 'Free-Mail' -SubjectOrBodyMatchesPatterns 'Clickbank', 'WorkArtIdea', 'necklace', 'teename', 'Massager', 'Crewdriver', 'Cutlery', 'Toenails', 'Ukraine', 'Shirt' -FromScope NotInOrganization -DeleteMessage $true]]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Auth-Passed" id="025b28c3-1af9-4807-ad47-19ba855ef776" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Auth-Passed' -Comments 'Tag if Authentication-Results are all pass and everything matches up (Best).
+Or either of the following (similar to CompAuth which is OK-ish):
+SPF=pass AND smtp.mailfrom=header.mailfrom
+DKIM=pass AND smtp.mailfrom=header.mailfrom
+' -Mode Enforce -SentToScope InOrganization -HeaderMatchesMessageHeader 'Authentication-Results' -HeaderMatchesPatterns 'spf=pa[^\0]+lfrom=(?:[\S.]+\.)?(?<d>\S+\.\S+);[^\0]+dkim=pa[^\0]+\.d=(?:[\S.]+\.)onmicrosoft\.com[^\0]+from=(?:[\S.]+\.)?\1', 'dkim=(pass|test)[^\0]+\.d=(?:[\S.]+\.)?(?<d>\S+\.\S+);[\s\S]+\.from=(?:[\S.]+\.)?\1', 'spf=(?:pass|temperror)[\s\S]+\.mailfrom=(?:[\S.]+\.)?(?<d>\S+\.\S+);[^\0]+\.from=(?:[\S.]+\.)?\1', 'spf=pass[^\0]+\.mailfrom=(?:[\S.]+\.)?(?<d>\S+\.\S+);[^\0]+dkim=pass[^\0]+\.d=(?:[\S.]+\.)?\1[^\0]+\.from=(?:[\S.]+\.)?\1', 'spf=pass[^\0]+dkim=pass[^\0]+dmarc=pass' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Free-mail' -ExceptIfAttachmentNameMatchesPatterns '\.(xlsm?|cmd|bat|ps1|vbs|js|html?|eml|msg)$' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Auth-Passed']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: ARC-Auth-Passed" id="28a7ba9e-161d-4d5e-ad42-ecb1654be4be" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: ARC-Auth-Passed' -Comments 'Tag if ARC-Auth are all pass.' -Mode Enforce -SentToScope InOrganization -HeaderMatchesMessageHeader 'ARC-Authentication-Results' -HeaderMatchesPatterns 'i=1[^\0]+?spf=pass[^\0]+\.mailfrom=(?:[\S.]+\.)?(?<d>\S+\.\S+); dmarc=pass[^\0]+\.from=(?:[\S.]+\.)?\1;[^\0]+dkim=pass' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Auth-Passed', 'Free-mail' -ExceptIfAttachmentNameMatchesPatterns '\.(xlsm?|cmd|bat|ps1|vbs|js|html?|eml|msg)$' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'ARC-Auth-Passed']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Auth-Failed" id="0a8648c9-a040-42d2-8e8b-34a0e7d208af" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Auth-Failed' -Comments 'Tag emails that failed Auth headers.' -Mode Enforce -SenderAddressLocation Envelope -SentToScope InOrganization -HeaderMatchesMessageHeader 'Authentication-Results' -HeaderMatchesPatterns '(spf|dkim|dmarc)=(?!pass)' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Auth-Passed', 'Free-Mail' -ExceptIfFromScope InOrganization -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Auth-Failed']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial-3rd-SPOOFED" id="f1acc90b-af2d-4be3-a221-ab562029930a" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial-3rd-SPOOFED' -Comments 'Spoofed emails from 3rd party services (MailChimp, SendGrid, etc.)' -Mode Enforce -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Auth-Failed' -HeaderMatchesMessageHeader 'Authentication-Results' -HeaderMatchesPatterns 'spf=pass[^\0]+\.mailfrom=(?:[\S.]+\.)?((mc|rsg)(sv|dlv)\.net|mandrillapp\.com); dkim=pass[^\0]+\.d=mailchimpapp\.net', 'spf=(?:pass|temperror)[^\0]+\.mailfrom=(?:[\S.]+\.)?(?<d>\S+\.\S+); dkim=pass[^\0]+\.d=(?:[\S.]+\.)?\1[^\0]+\.from=(?!ur_domain)' -ExceptIfHeaderMatchesMessageHeader 'Authentication-Results' -ExceptIfHeaderMatchesPatterns '\.mailfrom=(?!\w+\.shopifyemail\.com)\S+;[^\0]+dmarc=fail[^\0]+compauth=(?!pass)' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Commercial-3rd-SPOOFED']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Auth: Auth-Failed" id="2662425a-52b9-4dbb-b799-a9607169e139" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Auth: Auth-Failed' -Comments 'Clone Auth-Failed to another tag.' -Mode Enforce -SenderAddressLocation Envelope -HeaderMatchesMessageHeader 'X-PMF-Tag' -HeaderMatchesPatterns 'Auth-Failed' -SetHeaderName 'X-PMF-Auth' -SetHeaderValue 'Auth-Failed']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial-Content" id="cab5d1e3-417e-4213-8864-2149a6248fce" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial-Content' -Mode Enforce -SenderAddressLocation Envelope -SentToScope InOrganization -HeaderMatchesMessageHeader 'Authentication-Results' -HeaderMatchesPatterns '\.(mailfrom|from)=[^;]+?\.(\w{3,6}|us|ca);' -SubjectOrBodyMatchesPatterns 'deal|cleara|s[ei]\w+.?up', 'no longer w(ant|wish)', '(do.?)?n[o''‘‘’’]?t?.re(ply|spond)', 'https?:\/\/([^''"<>\s]+)?(unsubs?|subscri|opt.?out|pref(s|er)?|remove)', '\bship(ping|ped|ment)', 'mail((ing)? )?list', 'Terms of Use|Copyright|All Rights Reserved', '(fu(ture|rther)|commercial) (email|mess|comm)\S*?', '(Security|Return|Privacy)( (and|&) \w+?)? (Policy|Notice|Statement)', '(modify|change|update|manage|choose|edit)s? (to )?(my |your )?(\b\S+\b )?(prefere|e-?mails?|alert|notific|subscri)\S*?', 'term(s)?[\S ]+(condition|privac\w+)s?', 'trademarks?', 'opt.?out', 'webinar|marketing|personalized', 'automated', 'survey' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions', 'Auth-Failed', 'Free-Mail' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Auth' -ExceptIfHeaderMatchesPatterns 'Auth-Failed' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Commercial-Content']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial-Address" id="39fb7df4-a3cd-470f-adcc-ba50d946e0ea" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial-Address' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderMatchesMessageHeader 'Authentication-Results' -HeaderMatchesPatterns '\.(mailfrom|from)=[^;]+?\.(\w{3,5}|us|ca);' -FromAddressMatchesPatterns '^(e?mail(er)?|noti((ce|fication)|fy)|newsletter|lists?(erv)?|alert|info(rmation)?)s?@', '^(post|web|system).?(master)?@', 'MAILER.?DAEMON@', '^(customer.?)?(services?|support|security|help|care|reports?)@', '(un)?subscri(\w+)?', 'promotion(\w+)?', 'advertis(\w+)?', 'marketing', '(do.?)?(no?|auto).{0,2}repl\S+?', 'bounce' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions', 'Commercial-Content', 'Auth-Failed', 'Free-Mail' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Auth' -ExceptIfHeaderMatchesPatterns 'Auth-Failed' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Commercial-Address']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial-List" id="a92a3887-62e2-4e56-b372-7fa4b008708f" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial-List' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderMatchesMessageHeader 'List-Unsubscribe' -HeaderMatchesPatterns '[^\0]+' -FromScope NotInOrganization -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Tag' -ExceptIfHeaderMatchesPatterns 'Auth-Failed', 'Free-Mail', 'Exceptions', 'Commercial' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Commercial-List']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Mail-Thread" id="cbcc68d5-2114-439b-9095-e59eb8a29e1b" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Mail-Thread' -Comments 'Tagging for mail threads, conversations.' -Mode Enforce -SentToScope InOrganization -HeaderMatchesMessageHeader 'In-Reply-To' -HeaderMatchesPatterns '[^\0]*' -AnyOfRecipientAddressMatchesPatterns '@yourdomain\.com' -SubjectOrBodyMatchesPatterns 'On[\S ]{1,120}(\b[\w._-]+@[\w.-]+\.[a-z]{2,}\b)[^\0]+?wrote:', '(From|CC|Subject|To): ((?!@)[\S ]+)(\r)?\n(Sent|Date):' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Auth-Failed', 'Exceptions' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Mail-thread']]>
+			</commandBlock>
+		</version>
+	</rule>	
+	<rule name="X-PMF-Tag: Trusted Sending IP" id="7b238663-d97d-4b45-ad31-d8c55eb5e666" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Trusted Sending IP' -Comments 'Trusted IPs, could be either Internal or External.' -Mode Enforce -SenderIpRanges <your IP ranges> -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Trusted-IPs']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Internal Services" id="59f7cc7b-449f-4d07-af7a-e97a234ff7f5" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Internal Services' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -From 'sender@yourdomain.com' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Auth' -ExceptIfHeaderContainsWords 'Auth-Failed' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Internal-Services']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: External Services" id="08b886cf-7fff-4950-b704-40898a267b7d" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: External Services' -Comments 'Assign tag for common/well-known external service emails which users use them frequently. (i.e Canvas, Square, eBay, Amazon, Netflix, etc.)' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -From 'sender@extdomain.com' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Auth' -ExceptIfHeaderMatchesPatterns 'Auth-Failed' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'EXT-Services']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: External Service Domains" id="65af6f0c-0876-4c07-a9a3-f7e6ba88fe22" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: External Service Domains' -Comments 'Assign tag for common/well-known external service domains which users use them frequently. (i.e Canvas, Square, eBay, Amazon, Netflix, etc.)' -Mode Enforce -SenderDomainIs 'any-ext-domain.com' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Auth' -ExceptIfHeaderMatchesPatterns 'Auth-Failed' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'EXT-Services']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial-Trash (Auth-Failed)" id="60875d68-276e-4ee9-95c1-43880455e562" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial-Trash (Auth-Failed)' -Comments 'Set SCL = 9 (highest) for the "commercial"-like emails with failed Auth headers, or just delete them.' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Free-Mail', 'Auth-Failed' -SubjectOrBodyContainsWords 'unsubscribe' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions', 'Services' -SetSCL 9 -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Commercial-Trash']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Commercial Emoji" id="602b20b7-aab6-4c5b-bfa3-eef1b8cfb6ac" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Commercial Emoji' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Auth-Failed', 'Free-Mail', 'Commercial' -SubjectMatchesPatterns '[^\w\d\s -”]' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions', 'Services' -RejectMessageReasonText 'Stop spamming us!' -RejectMessageEnhancedStatusCode '5.7.1']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #MONETARY" id="555ad566-48dd-4c11-a2c8-0b5bc9fea1f9" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #MONETARY' -Comments 'Keywords: for inheritance/free money scam. No one is gonna give you millions of dollar.' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyContainsWords 'fund', 'overseas', 'donate', 'mutual benefit', 'consignment', 'kindly', 'compensation', 'victim', 'funds', 'next of kin', 'charity', 'donation', 'beneficiary', 'bank', 'ATM' -SubjectOrBodyMatchesPatterns '(?:(\$|USD)[^\n]*?)?\d?(?:(?(?=million)|[\S ]{0,3}?(\d{3}\b[,.]\d{3}\b(?!.\d{4}))[\S ]{0,10}?)|hundred([^\n]+)?thousand)', '(\$|U.?S.?D(ollar)?)[\S ]{0,5}?(\d{3}\b[,.]\d{3}\b(?!.\d{4}))', '(\d{3}\b[,.]\d{3}\b(?!.\d{4}))[\S ]{0,10}?(\$|U.?S.?D(ollar))', '\$?\d+?([.,]\d+?)? ?M(?!a|e|o|u|in|ill?e)(illion)?\b' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Mail-thread', 'Services', 'Commercial' -ExceptIfSubjectOrBodyMatchesPatterns '[^\0]{3500,}' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#MONETARY']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #GIFTCARD-Scam" id="49869a92-56f4-46e1-bee9-da8416bdf9b9" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #GIFTCARD-Scam' -Comments 'Keywords: for gift card scam.Scammers usually ask for gift card purchasing after the user has replied.  So, don''t use the "Mail-thread" tag as exception here.' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyContainsWords 'not able', 'not available', 'occupied', 'soon as possible', 'reimburse', 'currently', 'traveling', 'kindly', 'errand', 'in a meeting', 'urgent', 'asap', 'right now', 'scratch', 'favor', 'task' -SubjectOrBodyMatchesPatterns '(gift|prepaid).?cards?' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Commercial', 'Services' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#GIFTCARD-Scam']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #BILLING-Scam" id="dff3538a-2df0-456d-8c99-d5141ae5c1c7" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #BILLING-Scam' -Comments 'Fake billing/invoice/tech-support scam.' -Mode Enforce -SubjectOrBodyContainsWords 'billing', 'refund', 'renewed', 'amount', 'charge', 'purchase', 'renewal', 'subscription', 'invoice', 'transaction' -SubjectOrBodyMatchesPatterns '(?=[\s\S]*(norton|mcafee|\bamazon\b|\bbtc\b|crypto|dispu|cancel))\A[\s\S]*(?>[\dIlO]{3}[^\r\n]*[\dIlO]{3,4}[^\r\n]*[\dIlO]{3,4})', '(supp|\sus\b|desk|immed|help|phone|reach|service|call)[^\0]{0,50}(?>[\dIlO]{3}[^\r\n]*[\dIlO]{3,4}[^\r\n]*[\dIlO]{3,4})' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Mail-thread', 'Exceptions', 'Commercial', 'Services' -ExceptIfSubjectOrBodyContainsWords '<your location/state>' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-URL' -ExceptIfHeaderMatchesPatterns 'Exception-URLs' -ExceptIfSubjectOrBodyMatchesPatterns '\A(?=[^\0]{150,})((?!\$|USD)[\s\S]){0,}\Z', '[^\0]{3000,}' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#BILLING-Scam']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Payroll" id="980ef6ab-8170-42d6-a6aa-e5d95ca03d53" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Payroll' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyContainsWords 'pay date', 'direct deposit', 'paycheck', 'payroll' -SubjectOrBodyMatchesPatterns 'void\w*\b', '(chang|updat|modif|new)\w+' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Services' -ExceptIfSubjectOrBodyMatchesPatterns '[\s\S]{350,}' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Payroll']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Favor-Scam" id="b1dcba3a-5833-4645-b08e-72d982df52f2" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Favor-Scam' -Comments 'Block external scam asking for quick task, cell number, etc.' -Mode Enforce -SubjectOrBodyContainsWords 'request', 'free', 'response', 'handle', 'personal', 'confidentiality', 'cellphone', 'asap', 'text', 'your number', 'favor', 'cell', 'task', 'available' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Commercial', 'Services' -ExceptIfSubjectOrBodyMatchesPatterns '[\s\S]{400,}' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Favor-Scam']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Toxic-SharePoint" id="75f60562-773d-408c-925c-68362f0ad9e8" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Toxic-SharePoint' -Comments 'This will catch external SharePoint accounts trying to impersonate an internal user and toxic contents.' -Mode Enforce -SentToScope InOrganization -From 'no-reply@sharepointonline.com' -SubjectOrBodyMatchesPatterns 'https?:\/\/(?!([\w.-]+\.)?outlook\.com)', '[^\w\d\s -”]', 'https?:\/\/[^\s]+(?!_yourdomain_com)', '(?<k>shared a)[^\0]+?\1(?![^\0]+_yourdomain_com)' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Toxic-SharePoint']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-URL: Exception-URLs" id="54bb54bb-eebd-493f-be01-2acb14d5bf48" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-URL: Exception-URLs' -Mode Enforce -SentToScope InOrganization -SubjectOrBodyMatchesPatterns '(?>\w+@(?!yourdomain\.com)(?<e>\S+\.[a-z]+))(?=[^\0]*(?>https?:..(?:[\w\.]*\.)?\1[^\w\.]))', '(?>https?:..(?:[\w\.]*\.)?(?!yourdomain\.com)(?<d>(?>[^\s>\/]+\.[a-z]+)))(?=[^\0]*@\1\b(?!\.\w))', '(?<f>(?>https?:..(?:[^\/]*\.)?(?<d>(?!yourdomain\.com)(?>[^\/\s]+\.\w+))\/?[^\s"''<>]*))(?!(?>[^\0]*?\1))(?>[^\0]*?\2(?!\.\w)){4}' -ExceptIfSubjectOrBodyMatchesPatterns 'https?:..(?!([^\s>\/]*\.)?[^\s>\/]*\b(\.(gov|edu|mil|org|com|net|us|ca|tv|mp)|youtu\.be|cash\.app|(aka|svc|1drv)\.ms)(?!\.\b))' -SetHeaderName 'X-PMF-URL' -SetHeaderValue 'Exception-URLs']]>
+			</commandBlock>
+		</version>
+	</rule>	
+	<rule name="X-PMF-URL: Abnormal URLs" id="c2bc2d2a-ca85-4f87-abb2-78f2e84c920d" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-URL: Abnormal URLs' -Mode Enforce -SentToScope InOrganization -SubjectOrBodyMatchesPatterns 'https?:\/\/([^\s?=>]+\/){4}(?![^\s>]+(?:jpe?g|gif|png|svg|tiff?))', 'https?:\/\/([^\s>\/]{12,}\.)[\w-]+\.[a-z]{2,}(?<!yourdomain\.com|awstrack\.me)\b(?!\.\w)(?![^\s>]+(?:jpe?g|gif|png|svg|tiff?))', 'https?:..(?!([^\s>\/]*\.)?[^\s>\/]*\b(\.(gov|edu|mil|org|com|net|us|ca|tv|mp)|youtu\.be|cash\.app|(aka|svc|1drv)\.ms)(?!\.\b))', 'https?:\/\/[^\s"''>]+\.(php|html?)\b', 'https?:\/\/(?!([\w.-]+\.)?(yourdomain\.com|(sharepoint|outlook)\.com|svc\.ms)\b)[^\s>]+(\?|#|=)[^\s>]+(@|%40)yourdomain.?com', 'https?:\/\/\d+\.\d+\.\d+\.\d+', '(?>https?:..(?:[^\/]+\.)?(?<d>[^\/]+\.[^\/\b\s]+))(?<!(?:svc\.ms|awstrack\.me))[^\s>]*(?::|%3a)(?:\/\/|%2f%2f)(?![^\s>]*\b\1\b)', '(?<u>https?:\/\/(?!(?:[^\.]+\.)?(?:[^\.]+\.\w{3,5}\/?[\b\s]))(?>[^\b\s"''<>]+))(?>[^\0]+?\1[\b\s\"''<>]){2}' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Services', 'Mail-Thread', 'Exceptions', 'Trusted-IPs' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-URL' -ExceptIfHeaderMatchesPatterns 'Exception-URLs' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Abnormal-URLs']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Keywords" id="86519f3c-6e9b-468e-b045-1be0bbab9e91" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Keywords' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyMatchesPatterns '(?=[^\0]*\bcovid)\A[^\0]*\b(grant|benefit|relief)', 'Dear (value.? )?(user|customer).?', '\A(?![^\0]*\b(order|shipped))[^\0]*[\b\s](DHL\s|US?PS\b(.com)?|FedEx|parce)', '\A(?=[^\0]*?\b(?<!to )(maintain|keep|re(store|.?activate)) your)(?![^\0]*?\b(code|reset))[^\0]*?\b(accounts?\b|passw|access\b)', '(?=[^\0]{100,})(?![^\0]{1500,})\A(?=[^\0]*?\b(doc[xu]|fax))[^\0]*?(view|expire|deleted|cancel(l?ed)?\b)', '(?=[^\0]{99,})\A(?![^\0]*(statem|code|regi|creat|reset|trans|forg.t|b[ai]l|depos|s[ei]\w+.?up|paym))[^\0]*(accounts?\b|passw)', '\b(MetaMask|KYC|NFT|your wallet|kindly|shortly|urgent(?!.?care))\b', '(?<!a |the )(system).?(up(gra)?d(at)?e|maintenance)', 'storage limit', '\b(LinkedIn\s|Whatsapp|Walmart)', '\A(?![^\0]*?\b(Español|Français))[^\0]*?\b\w*[^®©�נ\u0000-\u007F\u2009-\u204F]\w*\b', '(re[lt]\w+e|un(re[ca]|del)\w*d|(secu|sha)red?|((?<!accept )incom|pend)ing|voice) (\w+ )?(messa|\w*?.?mails?|fax|docum|link|call)', 'remittance', 'blacklist.*?\b', '(?<!to )disabl.+?\b', '\s(suspend|hack)ed\b' -ExceptIfFrom 'events@attend.com' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Mail-thread', 'Exceptions', 'Services' -ExceptIfSubjectOrBodyMatchesPatterns '[^\0]{3500,}', '\A(?=[^\0]{150,})((?!https?:\/\/)[^\0]){0,}\Z' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Keywords']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Trending-Keywords" id="64f088e9-d7e4-413b-a17f-15c4d1e5c2ba" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Trending-Keywords' -Comments 'Keywords: trending phishing keywords 
+
+Detect suspicious content by keywords + tagging. Only catch the initial email, ignore emails chain to reduce false positive.
+Use another Tag for further processing.
+
+Tri Bui
+03/03/2022' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyMatchesPatterns '(btc|eth|doge)\w* wallet', 'bitcoin', 'Help Ukraine' -ExceptIfSenderIpRanges 161.57.0.0/16 -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Suspicious-Keywords', 'Trusted-IPs', 'Mail-thread', 'Exceptions', 'Commercial', 'Services' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Trending-Keywords']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Content-Job" id="59e4a58d-2d50-4a4e-8470-fc0ed2d8f928" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Content-Job' -Comments 'Keywords: for part-time job scam, keywords + ext email/url.' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -SubjectOrBodyContainsWords 'Home based position', 'evaluating', 'remote', 'alternative email', 'no work', 'employment offer', 'great opportunity', 'per week', 'this opportunity', 'hiring', 'honest', 'kindly', 'personal assistant', 'this position', 'trustworthy', 'vacancy', 'virtual assistant' -SubjectOrBodyMatchesPatterns '(\b[\w._-]+@(?!yourdomain\.com)[\w.-]+\.[a-z]{2,}\b)', '(https?:\/\/(?!([\w.-]+\.)?(yourdomain\.com|zoom\.us|calendly\.com|aka\.ms)\b)[^"''\s]+)', '(?=(week(ly)?|part.?time|offer\w{0,}\b|personal|private)\b)[\S\s]+(\b[\w._-]+@(?!yourdomain\.com)[\w.-]+\.[a-z]{2,}\b)' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Keywords', 'Trusted-IPs', 'Mail-thread', 'Exceptions', 'Commercial', 'Services' -ExceptIfSubjectOrBodyContainsWords 'next step', 'hiring process', 'no longer', 'Unfortunately', 'Unsubscribe', 'teams.microsoft.com', 'zoom.us', 'calendly.com' -ExceptIfSubjectOrBodyMatchesPatterns 'onboard', '\breview', 'consider', 'decided', 'letter', 'regret', 'talent', 'drug', 'contigent', 'coach', 'background', 'approv\w+', 'inter(view|n)\w*', '[^\0]{3000,}' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Content-Job']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Content-X-FILE (Attachment)" id="5f05962c-27a0-4a8f-9d7c-a8dafa16a462" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Content-X-FILE (Attachment)' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -FromScope NotInOrganization -AttachmentNameMatchesPatterns '2E.?HTML?=2E', 'utf-8', '\.do.x?m?$', '\..?html?\.', '\.mmp$', '\.xlsm?$', '[^\w\d\s -”]', '\.exe$', '\.cmd$', '\.ps1$', '\.bat$', '\.7z$', '\.zip$', '\..ar$', '\.msg$', '\.eml$', '\.js$', '\.vbs$', '\..?html?$' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Mail-thread', 'Services' -ExceptIfFromAddressMatchesPatterns 'postmaster@', 'MAILER.?DAEMON@' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Content-X-FILE']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Content-Too-Short" id="cb6266da-21f9-4bb2-b1a9-06a1a6edd9a6" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Content-Too-Short' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Auth-Failed', 'Free-Mail', 'Keywords', 'Abnormal-URLs', 'Suspicious' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'X-FILE', 'Commercial', 'Trusted-IPs', 'Exceptions', 'Services' -ExceptIfSubjectOrBodyMatchesPatterns '(?![^\0]{600,})(?=[^\0]*(code|regis|creat|reset|forg.t|s[ei]\w+.?up))\A[^\0]*(account\b|passw)', '(?(?=[^\0]*(?<k>(?>Confid\w+ (?:Not|State)|Disclaimer|©)))[^\0]{700,}\1|\A[^\0]{700,})' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Content-Too-Short']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Tag: Suspicious-Content (Keywords #2)" id="07388fcc-f6df-49c3-9979-5fd31fc6392b" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Tag: Suspicious-Content (Keywords #2)' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Too-Short', 'Keywords' -SubjectOrBodyMatchesPatterns '\A(?=[^\0]*\b(authen|valida|restor|storag|.e.?activat.ed?))(?![^\0]*?\b(code|reset))[^\0]*\b(accounts?|w?e?.?mail(box)?)\b', '。', '(?=risk|compromise|wrong|incorrect|(un|n.t( be)? )able|undeliver)([^\0]*\b(now\b|immediately|until|avoid))', '\b([bhiaswvern]{2,4}) (temp\w+ )?\b(shar|noti|hac|stol|leak|requi|affe|sus)\w*e[dsn]\b', '[a-z]+( [,.] ?|,)[a-z]+?', '(?=[^\0]{500,})\A[^\0]+(@|.?at.?)?yourdomain\.com\b', '\A(?![^\0]*?\b(code|reset))[^\0]*?\b(with)?in (\d\d.?h(ou)?r|0?\d.?day)s?\b', '\b(we|y?our) [^\.\n]{0,40}( [bhiaswvern]{2,4})? (not|lim|sus|fro|d(isa|e[ltcn])|u?n?[vt]er|res?[tmqa]|b?lock|expi)\w*e[dsn]?\b' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Mail-thread', 'Exceptions', 'Commercial', 'Services' -ExceptIfSubjectOrBodyMatchesPatterns '\A(?=[^\0]{150,})((?!https?:\/\/)[^\0]){1,}\Z', '[^\0]{3500,}' -SetHeaderName 'X-PMF-Tag' -SetHeaderValue 'Suspicious-Content']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #EXT-Phishing-File" id="ac1fccac-24e2-487f-80b0-37763b02bdb8" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #EXT-Phishing-File' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Too-Short', 'X-FILE' -FromScope NotInOrganization -AttachmentMatchesPatterns 'ms-msdt:', 'SMTP:', 'iframe', 'parseInt', 'document\.write', 'decodeURI', 'window\.location', 'base64', 'form action=', 'C:\\', 'Download', '\.exe', 'bitcoin', '\.dll', 'atob\(', '\.vbs', 'VBA(_PROJECT)?', 'eval\(', '<.?script', 'javascript', 'location\.href', 'log.?in', 'unescape\(', '(\w+@)?yourdomain\.com' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Services', 'Mail-Thread' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-URL' -ExceptIfHeaderMatchesPatterns 'Exception-URLs' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#EXT-Phishing-File']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: Block all unscannable attachments (#UNSCANNABLE)" id="11c340f0-c700-44f2-9912-98638cb40251" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Block all unscannable attachments (#UNSCANNABLE)' -Mode Enforce -FromScope NotInOrganization -AttachmentIsPasswordProtected $true -AttachmentNameMatchesPatterns '\.pdf$', '\.docm?$', '\.xls(x|m)?$', '\..ar$', '\.zip$' -ExceptIfSenderIpRanges 161.57.0.0/16 -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Commercial', 'Services' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Shield' -ExceptIfHeaderMatchesPatterns '^#' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#UNSCANNABLE']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #EXT-Phishing" id="91f447b3-1641-4546-a662-e6b25b067b62" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #EXT-Phishing' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Suspicious-Content' -SubjectOrBodyMatchesPatterns '\A(?![^\0]*https?:\/\/\S+)(?=[^\0]*\b(I.a?m|my name)\b)(?=[^\0]*(re(ply|spond)))', '(?<!(Confid\w+ (Not|Sta)|Discl|©)[^\0]*)https?:..(?![^\s\/>]*(\byourdomain\.com)\b(?!\.\w))[^\s\/>]+(?!\S+(jpe?g|gif|png|svg|tiff?))', '(?=(part.?time|offer\w{0,}\b|personal|private)\b)[\S\s]+(\b[\w._-]+@(?!yourdomain\.com)[\w.-]+\.[a-z]{2,}\b)' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-URL' -ExceptIfHeaderContainsWords 'Exception-URLs' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Shield' -ExceptIfHeaderMatchesPatterns '^#' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#EXT-Phishing']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Suspicious-EXT-BCC" id="d8b55cc4-b918-48ed-bea4-0eb9699ab044" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Suspicious-EXT-BCC' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Free-Mail', 'Abnormal-URLs', 'Keywords', 'Suspicious' -FromScope NotInOrganization -ExceptIfSenderIpRanges 1.2.3.4/16 -ExceptIfHeaderContainsMessageHeader 'CC' -ExceptIfHeaderContainsWords 'yourdomain.com' -ExceptIfSenderDomainIs 'privaterelay.appleid.com' -ExceptIfHeaderMatchesMessageHeader 'To' -ExceptIfHeaderMatchesPatterns 'yourdomain\.com' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Suspicious-EXT-BCC']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Crypto-Address" id="f51cec0b-4de2-4e77-92ca-33b763b336fc" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Crypto-Address' -Comments 'Credit to MBrassey @ https://gist.github.com/MBrassey/623f7b8d02766fa2d826bf9eca3fe005' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Suspicious' -SubjectOrBodyMatchesPatterns '\sbc1[\d\D]{39,59}\s', '\s4[0-9AB][1-9A-HJ-NP-Za-km-z]{93}', '\s[LM3][a-km-zA-HJ-NP-Z1-9]{26,33}', '\s0x[a-fA-F0-9]{40}', '\sX[1-9A-HJ-NP-Za-km-z]{33}', '\s[13][a-km-zA-HJ-NP-Z1-9]{33}', '\s[13][a-km-zA-HJ-NP-Z0-9]{26,33}' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', Commercial', 'Services', 'Exceptions' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Shield' -ExceptIfHeaderMatchesPatterns '^#' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Crypto-Address']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: #Suspicious-BCC" id="c3cec686-f767-4bbf-a92f-6dc3a7d26d54" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: #Suspicious-BCC' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -SentToScope InOrganization -HeaderContainsMessageHeader 'X-PMF-Tag' -HeaderContainsWords 'Suspicious-Content' -SenderDomainIs 'yourdomain.com' -HeaderMatchesMessageHeader 'X-MS-Exchange-Organization-BCC' -HeaderMatchesPatterns 'yourdomain.com' -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Services', 'Mail-thread', 'Trusted-IPs' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#Suspicious-BCC']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: Internal Off-hours BCC (#OffHours-BCC)" id="5d4645b1-11bb-40b1-8678-4979821f2384" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Internal Off-hours BCC (#OffHours-BCC)' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -HeaderContainsMessageHeader 'X-MS-Exchange-Organization-BCC' -HeaderContainsWords 'yourdomain.com' -HeaderMatchesMessageHeader 'Date' -HeaderMatchesPatterns 'Sun|Sat', '(?<!(Sun|Sat).{14})(0[0-9]|1[0-2]|2[2-4]):\d{2}:\d{2} \+\d{4}' -FromScope InOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Trusted-IPs', 'Services' -ExceptIfHeaderMatchesMessageHeader 'X-PMF-Shield' -ExceptIfHeaderMatchesPatterns '^#' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#OffHours-BCC']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: Block Spoofing (#SPOOFING)" id="89c6d6d8-d4ac-41d7-a78e-d1734ff99509" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Block Spoofing (#SPOOFING)' -Mode Enforce -HeaderMatchesMessageHeader 'X-PMF-Auth' -HeaderMatchesPatterns 'Auth-Failed' -FromAddressMatchesPatterns '[^\s]+@yourdomain\.com' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Exceptions', 'Trusted-IPs' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#SPOOFING']]>
+			</commandBlock>
+		</version>
+	</rule>
+	<rule name="X-PMF-Shield: Block Impersonate (#IMPERSONATE)" id="825b4ef3-50e6-4b87-b2c6-67872b27ca74" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Block Impersonate (#IMPERSONATE)' -Mode Enforce -HeaderMatchesMessageHeader 'From' -HeaderMatchesPatterns '@(?<d>[\w.-]+)[^\0]*@(?!\1)', 'yourcompanyname[\S ]+@(?!yourdomain\.com)' -FromScope NotInOrganization -ExceptIfHeaderContainsMessageHeader 'X-PMF-Tag' -ExceptIfHeaderContainsWords 'Mail-Thread', 'Commercial', 'Services', 'Exceptions' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#IMPERSONATE']]>
+			</commandBlock>
+		</version>
+	</rule>
+
+	<rule name="X-PMF-Shield: Quarantined Senders" id="4bd9b6bf-552a-4d44-951e-3214d475f265" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Quarantined Senders' -Comments 'Use this rule to quarantine internal compromised accounts. Remember to remove the email from the list after done Incident Response/Clean Up.' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -From 'compromised@yourdomain.com' -HeaderMatchesMessageHeader 'X-MS-Exchange-Organization-BCC' -HeaderMatchesPatterns 'yourdomain.com' -SetHeaderName 'X-PMF-Shield' -SetHeaderValue '#QUARANTINED']]>
+			</commandBlock>
+		</version>
+	</rule>
+
+	<rule name="X-PMF-Shield: Mail Approval" id="2401fdf6-3606-4538-8ccf-a81a6120f738" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Mail Approval' -Mode Enforce -SenderAddressLocation HeaderOrEnvelope -HeaderMatchesMessageHeader 'X-PMF-Shield' -HeaderMatchesPatterns '\A#' -ExceptIfHeaderContainsMessageHeader 'X-Forwarded-To' -ExceptIfHeaderContainsWords 'yourdomain.com' -ExceptIfHeaderMatchesMessageHeader 'Resent-From' -ExceptIfHeaderMatchesPatterns '@' -ModerateMessageByUser 'phishing@yourdomain.com']]>
+			</commandBlock>
+		</version>
+	</rule>
+
+	<rule name="X-PMF-Shield: Block Mail Rejection Notifications" id="ad855273-2868-4d6a-8413-dc02ba19a5b3" format="cmdlet">
+		<version requiredMinVersion="15.0.3.0">
+			<commandBlock>
+				<![CDATA[New-TransportRule -Name 'X-PMF-Shield: Block Mail Rejection Notifications' -Mode Enforce -SenderDomainIs 'yourdomain.onmicrosoft.com' -SubjectMatchesPatterns '\A(Rejected|Expired):' -DeleteMessage $true]]>
+			</commandBlock>
+		</version>
+	</rule>
+</rules>
