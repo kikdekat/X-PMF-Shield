@@ -4,6 +4,12 @@
 
 
 
+
+**Disclaimer:** I am not an Exchange nor RegEx expert. This rule set is the result of my RegEx practices and is completely designed for Transport Rules, not including any ATP settings.
+
+
+
+
 ## Table of Contents
 
 [**1. Know the limitations of MS Exchange Online Mail Flow (formerly Transport Rules)**](#1-know-the-limitations-of-ms-exchange-online-mail-flow-formerly-transport-rules)
@@ -67,11 +73,6 @@
  * [**4.2.1 Email Analyzing**](#421-email-analyzing)
 
  * [**4.2.2 Tracking Rule’s Performance**](#422-tracking-rules-performance)
-
-
-
-**Disclaimer:** I am not an Exchange nor RegEx expert. This rule set is the result of my RegEx practices and is completely designed for Transport Rules, not including any ATP settings.
-
 
 
 
